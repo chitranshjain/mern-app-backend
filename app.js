@@ -7,6 +7,7 @@ const HttpError = require("./models/http-error");
 
 // Importing routes
 const placesRoutes = require("./routes/places-routes");
+const userRoutes = require("./routes/users-routes");
 
 // Initializing express app
 const app = express();
@@ -16,6 +17,7 @@ app.use(bodyParser.json());
 
 //Initializing the routes
 app.use("/api/places", placesRoutes);
+app.use("/api/users", userRoutes);
 
 // Default route not found error
 app.use((req, res, next) => {
