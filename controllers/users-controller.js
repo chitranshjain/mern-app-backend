@@ -1,5 +1,4 @@
 const { validationResult } = require("express-validator");
-const { v4: uuidv4 } = require("uuid");
 
 const HttpError = require("../models/http-error");
 const User = require("../models/users");
@@ -7,19 +6,19 @@ const User = require("../models/users");
 const getUsers = async (req, res, next) => {
   let users;
 
-  try{
+  try {
     users = await User.find({}, "-password");
   } catch (err) {
     const error = new HttpError("Something went wrong.", 500);
     return next(error);
   }
 
-  if(!users) {
+  if (!users) {
     const error = new HttpError("Could not find any users.", 404);
     return next(error);
   }
 
-  res.json({users : users.map(user => user.toObject({getters: true}))});
+  res.json({ users: users.map((user) => user.toObject({ getters: true })) });
 };
 
 const signup = async (req, res, next) => {
@@ -28,7 +27,7 @@ const signup = async (req, res, next) => {
     console.log(errors);
     return next(new HttpError("Invalid input", 422));
   }
-  const { name, email, password, places } = req.body;
+  const { name, email, password } = req.body;
 
   let existingUser;
 
@@ -49,7 +48,7 @@ const signup = async (req, res, next) => {
     password,
     image:
       "https://img.freepik.com/free-photo/portrait-white-man-isolated_53876-40306.jpg?size=626&ext=jpg",
-    places,
+    places: [],
   });
 
   try {
