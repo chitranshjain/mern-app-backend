@@ -1,6 +1,8 @@
 // Importing packages
 const express = require("express");
 const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
+const dotenv = require("dotenv");
 
 // Local imports
 const HttpError = require("./models/http-error");
@@ -11,6 +13,7 @@ const userRoutes = require("./routes/users-routes");
 
 // Initializing express app
 const app = express();
+dotenv.config();
 
 //Using middlewares
 app.use(bodyParser.json());
@@ -36,4 +39,14 @@ app.use((error, req, res, next) => {
 });
 
 // Running server on port 5000
-app.listen(5000);
+
+mongoose
+  .connect(process.env.MONGODB_ATLAS_URI, {useUnifiedTopology : true, useNewUrlParser : true})
+  .then(() => {
+    app.listen(5000, () => {
+      console.log("Server is up and running on port 5000");
+    });
+  })
+  .catch((err) => {
+    console.log("Could not connect to the database. Error : " + err.message);
+  });
