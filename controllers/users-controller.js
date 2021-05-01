@@ -39,7 +39,7 @@ const signup = async (req, res, next) => {
   }
 
   if (existingUser) {
-    throw new HttpError("Email already registered", 422);
+    return next(new HttpError("Email already registered", 422));
   }
 
   const createdUser = new User({
@@ -85,7 +85,10 @@ const login = async (req, res, next) => {
     return next(err);
   }
 
-  res.json({ message: "User logged in successfully." });
+  res.json({
+    message: "User logged in successfully.",
+    user: existingUser.toObject({ getters: true }),
+  });
 };
 
 exports.getUsers = getUsers;
