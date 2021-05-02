@@ -1,4 +1,6 @@
 const { validationResult } = require("express-validator");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 const HttpError = require("../models/http-error");
 const User = require("../models/users");
@@ -42,10 +44,17 @@ const signup = async (req, res, next) => {
     return next(new HttpError("Email already registered", 422));
   }
 
+  let hashedPassword;
+  try {
+    hashedPassword = await bcrypt.hash(password, 12);
+  } catch (err) {
+    return next(new HttpError("An error occurred.", 500));
+  }
+
   const createdUser = new User({
     name,
     email,
-    password,
+    password: hashedPassword,
     image: req.file.path,
     places: [],
   });
@@ -57,9 +66,22 @@ const signup = async (req, res, next) => {
     return next(error);
   }
 
+  let token;
+  try {
+    token = jwt.sign(
+      { userId: createdUser.id, email: createdUser.email },
+      "supersecretkey_dont_share",
+      { expiresIn: "1h" }
+    );
+  } catch (err) {
+    return next(new HttpError("Something went wrong, try again.", 500));
+  }
+
   res.status(201).json({
     message: "User signed up successfully",
-    user: createdUser.toObject({ getters: true }),
+    userId: createdUser.id,
+    email: createdUser.email,
+    token: token,
   });
 };
 
@@ -79,14 +101,29 @@ const login = async (req, res, next) => {
     return next(error);
   }
 
-  if (!existingUser || existingUser.password !== password) {
+  console.log(bcrypt.compareSync(password, existingUser.password));
+
+  if (!existingUser || !bcrypt.compareSync(password, existingUser.password)) {
     const err = new HttpError("Invalid credentials.", 401);
     return next(err);
   }
 
+  let token;
+  try {
+    token = jwt.sign(
+      { userId: existingUser.id, email: existingUser.email },
+      "supersecretkey_dont_share",
+      { expiresIn: "1h" }
+    );
+  } catch (err) {
+    return next(new HttpError("Something went wrong, try again.", 500));
+  }
+
   res.json({
     message: "User logged in successfully.",
-    user: existingUser.toObject({ getters: true }),
+    userId: existingUser.id,
+    email: existingUser.email,
+    token: token,
   });
 };
 
