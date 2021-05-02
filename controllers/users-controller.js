@@ -46,8 +46,7 @@ const signup = async (req, res, next) => {
     name,
     email,
     password,
-    image:
-      "https://img.freepik.com/free-photo/portrait-white-man-isolated_53876-40306.jpg?size=626&ext=jpg",
+    image: req.file.path,
     places: [],
   });
 
